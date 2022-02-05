@@ -6,10 +6,29 @@ describe('#getCandles', function(){
 
   it('returns candles', async function(){
     const connection = await connect()
-    const candles = await getCandles({ connection, symbols: ['FX:AUDCAD', 'FX:AUDCHF'] })
+    const candles = await getCandles({
+      connection,
+      symbols: ['FX:AUDCAD', 'FX:AUDCHF'],
+      amount: 10,
+      timeframe: '1D'
+    })
     await connection.close()
 
     expect(candles.length).to.eq(2)
-    expect(candles[0].length).to.not.eq(0)
+    expect(candles[0].length).to.eq(10)
+    expect(candles[0][1].timestamp - candles[0][0].timestamp).to.eq(24 * 60 * 60)
+  })
+
+  it('returns all available candles', async function() {
+    const connection = await connect()
+    const candles = await getCandles({
+      connection,
+      symbols: ['FX:AUDCAD'],
+    })
+    await connection.close()
+
+    // experimentally found that tradingview
+    // can send maximum around 13000 hourly candles
+    expect(candles[0].length).to.gt(10_000)
   })
 })
