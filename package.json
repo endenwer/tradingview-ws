@@ -1,14 +1,29 @@
 {
   "name": "tradingview-ws",
   "version": "0.0.1",
-  "description": "",
-  "main": "index.js",
+  "description": "Tradingview websocket API",
+  "repository": "https://github.com/endenwer/tradingview-ws.git",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.MD"
+  ],
   "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run typecheck && npm run test && npm run build",
     "test": "mocha -r ts-node/register src/**/*.spec.ts",
     "typecheck": "tsc --noEmit"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Stepan Lusnikov <endenwer@gmail.com>",
+  "license": "MIT",
+  "keywords": [
+    "tradingview",
+    "scraper",
+    "scraping",
+    "websocket",
+    "candlestick"
+  ],
   "dependencies": {
     "axios": "^0.25.0",
     "randomstring": "^1.2.2",
