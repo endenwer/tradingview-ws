@@ -38,6 +38,12 @@ Options:
 
 Fetches all available candles for symbols. The maximum amount is around 13_000 candles for the hourly timeframe. Returns an array where each element is an array of candles for one symbol in the order it passed to the function.
 
+Options:
+
+* `connection: TradingviewConnection` - connection object
+* `symbols: string[]` - array of symbols. Symbol name can be found on Symbol info modal(click three dots after symbol name on the top left corner of the chart).
+* `timeframe?: number | '1D' | '1W' | '1M'` - candlestick timeframe, default is `60`
+
 ### `TradingviewConnection`
 
 Connection object. Can be used directly to receive and send data to websockets.
