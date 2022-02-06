@@ -32,7 +32,7 @@ Creates new connection to tradingview websockets. Returns `TradingviewConnection
 
 Options:
 
-* 'sessionId?: string' - authorize connection if present. Can be received from cookies.
+* `sessionId?: string` - authorize connection if present. Can be received from cookies.
 
 ### `getCandles({ connection, symbols, amount, timeframe = 60 }: GetCandlesParams)`
 
@@ -43,6 +43,7 @@ Options:
 * `connection: TradingviewConnection` - connection object
 * `symbols: string[]` - array of symbols. Symbol name can be found on Symbol info modal(click three dots after symbol name on the top left corner of the chart).
 * `timeframe?: number | '1D' | '1W' | '1M'` - candlestick timeframe, default is `60`
+* `amount?: number` - amount of candles to fetch. If not present, it will try to fetch as much as possible.
 
 ### `TradingviewConnection`
 
