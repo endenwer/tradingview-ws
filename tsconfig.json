@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
     "module": "commonjs",
     "resolveJsonModule": true,
     "strict": true,
