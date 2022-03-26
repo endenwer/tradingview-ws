@@ -166,8 +166,9 @@ export async function getCandles({ connection, symbols, amount, timeframe = 60 }
       }
 
       // loaded all requested candles
-      if (event.name === 'series_completed') {
-        if (currentSymCandles.length % batchSize === 0 && (!amount || currentSymCandles.length < amount)) {
+      if (['series_completed', 'symbol_error'].includes(event.name)) {
+        const loadedCount = currentSymCandles.length
+        if (loadedCount > 0 && loadedCount % batchSize === 0 && (!amount || loadedCount < amount)) {
           connection.send('request_more_data', [chartSession, 'sds_1', batchSize])
           return
         }

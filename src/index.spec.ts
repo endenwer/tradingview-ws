@@ -31,4 +31,16 @@ describe('#getCandles', function(){
     // can send maximum around 13000 hourly candles
     expect(candles[0].length).to.gt(10_000)
   })
+
+  it('returns empty candles for incorrect symbol', async function() {
+    const connection = await connect()
+    const candles = await getCandles({
+      connection,
+      symbols: ['FX:AUDCAD', 'UNKNOWN'],
+    })
+    await connection.close()
+
+    expect(candles[0].length).to.gt(10_000)
+    expect(candles[1].length).to.eq(0)
+  })
 })
