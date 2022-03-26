@@ -51,6 +51,6 @@ Connection object. Can be used directly to receive and send data to websockets.
 
 Methods:
 
-* `subscribe: (handler: Subscriber) => Unsubscriber` - subscribe to wesockets events
-* `send: (name: string, params: any[]) => void` - send command to websocket
+* `subscribe: (handler: Subscriber) => Unsubscriber` - subscribe to websockets events
+* `send: (name: string, params: any[]) => void` - send command to websockets
 * `close: () => Promise<void>` - close the connection
