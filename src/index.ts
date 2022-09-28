@@ -1,72 +1,37 @@
 import axios from 'axios'
 import WebSocket from 'ws'
 import randomstring from "randomstring"
+import { Candle, ConnectionOptions, GetCandlesParams, MAX_BATCH_SIZE, MessagePayload, RawCandle, Subscriber, TradingviewConnection, Unsubscriber } from './types'
 
-const MAX_BATCH_SIZE = 5000 // found experimentally
-
-type Subscriber = (event: TradingviewEvent) => void
-type Unsubscriber = () => void
-
-type MessageType = 'ping' | 'session' | 'event'
-
-interface RawCandle {
-  i: number
-  v: number[]
+export const EVENT_NAMES = {
+  TIMESCALE_UPDATE: 'timescale_update',
+  SERIES_COMPLETED: 'series_completed',
+  SYMBOL_ERROR: 'symbol_error',
+  RESOLVE_SYMBOL: 'resolve_symbol',
+  CREATE_SERIES: 'create_series',
+  REQUEST_MORE_DATA: 'request_more_data',
 }
-
-export interface Candle {
-  timestamp: number
-  high: number
-  low: number
-  open: number
-  close: number
-  volume: number
-}
-
-interface MessagePayload {
-  type: MessageType
-  data: any
-}
-
-interface TradingviewConnection {
-  subscribe: (handler: Subscriber) => Unsubscriber
-  send: (name: string, params: any[]) => void
-  close: () => Promise<void>
-}
-
-interface ConnectionOptions {
-  sessionId?: string
-}
-
-interface TradingviewEvent {
-  name: string,
-  params: any[]
-}
-
-type TradingviewTimeframe = number | '1D' | '1W' | '1M'
 
 function parseMessage(message: string): MessagePayload[] {
   if (message.length === 0) return []
-
   const events = message.toString().split(/~m~\d+~m~/).slice(1)
-
-  return events.map(event => {
+  const s: MessagePayload[] = events.map(event => {
     if (event.substring(0, 3) === "~h~") {
       return { type: 'ping', data: `~m~${event.length}~m~${event}` }
     }
-
     const parsed = JSON.parse(event)
-
     if (parsed['session_id']) {
       return { type: 'session', data: parsed }
     }
-
     return { type: 'event', data: parsed }
   })
+
+  return s
 }
 
-export async function connect(options: ConnectionOptions = {}): Promise<TradingviewConnection> {
+export async function connect(options: ConnectionOptions = {},): Promise<TradingviewConnection> {
   let token = 'unauthorized_user_token'
+
 
   if (options.sessionId) {
     const resp = await axios({
@@ -106,10 +71,8 @@ export async function connect(options: ConnectionOptions = {}): Promise<Tradingv
 
   return new Promise<TradingviewConnection>((resolve, reject) => {
     connection.on('error', error => reject(error))
-
     connection.on('message', message => {
       const payloads = parseMessage(message.toString())
-
       for (const payload of payloads) {
         switch (payload.type) {
           case 'ping':
@@ -122,7 +85,7 @@ export async function connect(options: ConnectionOptions = {}): Promise<Tradingv
           case 'event':
             const event = {
               name: payload.data.m,
-              params: payload.data.p
+              params: payload.data,
             }
             subscribers.forEach(handler => handler(event))
             break;
@@ -134,12 +97,7 @@ export async function connect(options: ConnectionOptions = {}): Promise<Tradingv
   })
 }
 
-interface GetCandlesParams {
-  connection: TradingviewConnection,
-  symbols: string[],
-  amount?: number
-  timeframe?: TradingviewTimeframe
-}
+
 
 export async function getCandles({ connection, symbols, amount, timeframe = 60 }: GetCandlesParams) {
   if (symbols.length === 0) return []
@@ -149,9 +107,23 @@ export async function getCandles({ connection, symbols, amount, timeframe = 60 }
 
   return new Promise<Candle[][]>(resolve => {
     const allCandles: Candle[][] = []
+    let currentSymCandles: RawCandle[] = []
     let currentSymIndex = 0
     let symbol = symbols[currentSymIndex]
-    let currentSymCandles: RawCandle[] = []
+
+
+
+
+    connection.send('chart_create_session', [chartSession, ''])
+    connection.send('resolve_symbol', [
+      chartSession,
+      `sds_sym_0`,
+      '=' + JSON.stringify({ symbol, adjustment: 'splits' })
+    ])
+
+    connection.send('create_series', [
+      chartSession, 'sds_1', 's0', 'sds_sym_0', timeframe.toString(), batchSize, ''
+    ])
 
     const unsubscribe = connection.subscribe(event => {
       // received new candles
@@ -214,15 +186,39 @@ export async function getCandles({ connection, symbols, amount, timeframe = 60 }
         resolve(allCandles)
       }
     })
+  })
+}
 
-    connection.send('chart_create_session', [chartSession, ''])
-    connection.send('resolve_symbol', [
-      chartSession,
-      `sds_sym_0`,
-      '=' + JSON.stringify({ symbol, adjustment: 'splits' })
-    ])
-    connection.send('create_series', [
-      chartSession, 'sds_1', 's0', 'sds_sym_0', timeframe.toString(), batchSize, ''
-    ])
+
+
+export async function connectAndSubscribe({ connection, symbols, timeframe = 1, callback }: GetCandlesParams) {
+  if (symbols.length === 0) return []
+  const chartSession = "cs_" + randomstring.generate(12)
+  const currentSymIndex = 0
+  const symbol = symbols[currentSymIndex]
+  connection.send('chart_create_session', [chartSession, ''])
+  connection.send(EVENT_NAMES.RESOLVE_SYMBOL, [
+    chartSession,
+    `sds_sym_0`,
+    '=' + JSON.stringify({ symbol, adjustment: 'splits' })
+  ])
+  connection.send(EVENT_NAMES.CREATE_SERIES, [
+    chartSession, 'sds_1', 's0', 'sds_sym_0', timeframe.toString(), 1, ''
+  ])
+  connection.subscribe((event: any) => {
+    if (event.name = "event") {
+      if (event.params.p[1].sds_1?.s !== undefined) {
+        const candles = {
+          timestamp: event.params.p[1].sds_1.s[0].v[0],
+          open: event.params.p[1].sds_1.s[0].v[1],
+          high: event.params.p[1].sds_1.s[0].v[2],
+          low: event.params.p[1].sds_1.s[0].v[3],
+          close: event.params.p[1].sds_1.s[0].v[4],
+          volume: event.params.p[1].sds_1.s[0].v[5],
+          symbol
+        }
+        callback(candles)
+      }
+    }
   })
 }
