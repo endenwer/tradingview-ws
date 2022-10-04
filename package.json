@@ -12,6 +12,7 @@
   ],
   "scripts": {
     "build": "tsc",
+    "start": "nodemon ./example.ts",
     "prepublishOnly": "npm run typecheck && npm run test && npm run build",
     "test": "mocha -r ts-node/register src/**/*.spec.ts",
     "typecheck": "tsc --noEmit"
@@ -27,6 +28,7 @@
   ],
   "dependencies": {
     "axios": "^0.25.0",
+    "nodemon": "^2.0.20",
     "randomstring": "^1.2.2",
     "ws": "^8.4.2"
   },

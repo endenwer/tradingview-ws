@@ -14,7 +14,7 @@ export interface GetCandlesParams {
   symbols: string[],
   amount?: number
   timeframe?: TradingviewTimeframe
-  callback: (event: any) => void
+  // callback: (event: any) => void
 }
 export interface Candle {
   timestamp: number
