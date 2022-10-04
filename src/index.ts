@@ -2,7 +2,6 @@ import axios from 'axios'
 import WebSocket, { EventEmitter } from 'ws'
 import randomstring from "randomstring"
 import { Candle, ConnectionOptions, GetCandlesParams, MAX_BATCH_SIZE, MessagePayload, RawCandle, Subscriber, TradingviewConnection, Unsubscriber } from './types'
-import throttledQueue from 'throttled-queue'
 
 export const EVENT_NAMES = {
   TIMESCALE_UPDATE: 'timescale_update',

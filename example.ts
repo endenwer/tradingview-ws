@@ -1,4 +1,4 @@
-import { connect, getCandles, getCandles2V2, } from './src/index'
+import { connect, getCandles, getCandlesV2, } from './src/index'
 
 
 (async function () {
@@ -8,7 +8,7 @@ import { connect, getCandles, getCandles2V2, } from './src/index'
  
     const start = new Date().getTime();
     const connection = await connect();
-    const candles = await getCandles2V2({
+    const candles = await getCandlesV2({
       connection,
       symbols: data.map(res => `IDX:${res}`),
       amount: 2,
