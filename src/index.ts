@@ -98,7 +98,7 @@ export async function connect(options: ConnectionOptions = {},): Promise<Trading
   })
 }
 
-export async function getCandles2({ connection, symbols, amount = 1000, timeframe = '1D' }: GetCandlesParams) {
+export async function getCandlesV2({ connection, symbols, amount = 1000, timeframe = '1D' }: GetCandlesParams) {
   if (symbols.length === 0) return [] // at most make 10 requests every second, but evenly spaced.
   const d = symbols.map(symbol => new Promise((resolve, reject) => {
     const chartSession = "cs_" + randomstring.generate(12)
