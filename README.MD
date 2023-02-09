@@ -1,6 +1,8 @@
 ## Tradingview websockets integration
 Unofficial library to interact with websockets on Tradingview.
 
+P.S. Check out this awesome trading journal app https://tradinglog.app.
+
 ## Features
 - Realtime data from Tradingview
 - Authorization with session id from cookies
