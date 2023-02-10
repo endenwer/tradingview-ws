@@ -9,6 +9,9 @@ P.S. Check out this awesome trading journal app https://tradinglog.app.
 - Fetching candlesticks for any symbol with any available timeframe
 
 ## Example
+
+### Getting candles 
+here is an example when you want to get a candle with a one-time function this function returns a candle that matches the symbol you provide
 ```ts
 import { connect, getCandles } from 'tradingview-ws'
 
@@ -25,6 +28,33 @@ import { connect, getCandles } from 'tradingview-ws'
   console.log(`Candles for AUDCHF:`, candles[1])
 }());
 ```
+
+### Subscribe With Symbol
+The following is an example of subscribing to some of the symbols that you follow. You have to send a callback to find out which symbols you are subscribing for
+
+```ts
+import { connect, connectAndSubscribe } from 'tradingview-ws'
+
+(async function () {
+  try {
+    for (const iterator of ["SOLUSDT", "BTCUSDT"]) {
+      const connection = await connect()
+      connectAndSubscribe({
+        connection,
+        symbols: [iterator],
+        amount: 1,
+        timeframe: 1,
+        callback: (event) => {
+          console.log(event)
+        }
+      })
+    }
+  } catch (error) {
+    console.error(error)
+  }
+}());
+```
+
 
 ## API
 
